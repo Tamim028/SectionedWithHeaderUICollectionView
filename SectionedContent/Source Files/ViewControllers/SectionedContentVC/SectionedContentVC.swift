@@ -85,8 +85,7 @@ class SectionedContentCollectionView: UICollectionView {
     private func setupCV(){
         self.dataSource = self
         self.delegate = self
-        //let nibCell = UINib(nibName: cellID, bundle: nil)
-        //self.register(nibCell, forCellWithReuseIdentifier: cellID)
+        
         self.showsVerticalScrollIndicator = false
         self.showsHorizontalScrollIndicator = false
         
