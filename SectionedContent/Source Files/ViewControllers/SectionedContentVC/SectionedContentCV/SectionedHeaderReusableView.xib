@@ -9,7 +9,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SectionedHeaderReusableView" id="U6b-Vx-4bR" customClass="SectionedHeaderReusableView" customModule="SwiftAnimationWithUIKit" customModuleProvider="target">
+        <collectionReusableView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="SectionedHeaderReusableView" id="U6b-Vx-4bR" customClass="SectionedHeaderReusableView" customModule="SectionedWithHeaderUICollectionView" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="35" height="92"/>
             <autoresizingMask key="autoresizingMask"/>
             <subviews>
@@ -38,6 +38,7 @@
                 <constraint firstItem="2Tj-x3-mZ4" firstAttribute="centerY" secondItem="U6b-Vx-4bR" secondAttribute="centerY" id="wow-dg-azi"/>
             </constraints>
             <connections>
+                <outlet property="mainContentView" destination="2Tj-x3-mZ4" id="0m2-AH-AmW"/>
                 <outlet property="titleLabel" destination="IQV-Pr-L0N" id="yS9-pf-2WK"/>
             </connections>
             <point key="canvasLocation" x="-92.36641221374046" y="19.718309859154932"/>

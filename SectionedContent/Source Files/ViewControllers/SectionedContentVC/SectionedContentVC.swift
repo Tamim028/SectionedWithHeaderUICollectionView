@@ -36,9 +36,9 @@ class SectionedContentVC: UIViewController {
             ContentViewModel(uuid: "9", name: "Content 9")
         ]
         let categoryModels: [SectionedContentCategoryViewModel] = [
-            SectionedContentCategoryViewModel(name: "Cat1", contents: contents1),
-            SectionedContentCategoryViewModel(name: "Cat2", contents: contents2),
-            SectionedContentCategoryViewModel(name: "Cat3", contents: content3)
+            SectionedContentCategoryViewModel(uuid: "ct1", name: "Cat1", contents: contents1),
+            SectionedContentCategoryViewModel(uuid: "ct2", name: "Cat2", contents: contents2),
+            SectionedContentCategoryViewModel(uuid: "ct3", name: "Cat3", contents: content3)
         ]
         
         return categoryModels
@@ -50,8 +50,10 @@ class SectionedContentVC: UIViewController {
 //-------------
 class SectionedContentCategoryViewModel {
     let name: String
+    let uuid: String
     let contents: [ContentViewModel]
-    init(name: String, contents: [ContentViewModel]){
+    init(uuid: String, name: String, contents: [ContentViewModel]){
+        self.uuid = uuid
         self.name = name
         self.contents = contents
     }
@@ -99,7 +101,7 @@ class SectionedContentCollectionView: UICollectionView {
     
 }
 
-extension SectionedContentCollectionView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+extension SectionedContentCollectionView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, SectionedHeaderReusableViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: 35, height: 76)
@@ -107,10 +109,15 @@ extension SectionedContentCollectionView: UICollectionViewDataSource, UICollecti
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader, let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerCellID, for: indexPath) as?  SectionedHeaderReusableView {
-            headerView.titleLabel.text = cellViewModels[indexPath.section].name
-                return headerView
+            headerView.update(viewModel: cellViewModels[indexPath.section])
+            headerView.delegate = self
+            return headerView
         }
         fatalError()
+    }
+    
+    func selectedHeader(uuid: String) {
+        print("Event: SectionedContentVC: HeaderView selected... uuid: \(uuid)")
     }
     
     
