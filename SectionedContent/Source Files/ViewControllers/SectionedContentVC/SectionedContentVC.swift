@@ -51,12 +51,35 @@ class SectionedContentVC: UIViewController {
 class SectionedContentCategoryViewModel {
     let name: String
     let uuid: String
-    let contents: [ContentViewModel]
+    var contents: [ContentViewModel]
+    private var squeeze: Bool = false
     init(uuid: String, name: String, contents: [ContentViewModel]){
         self.uuid = uuid
         self.name = name
         self.contents = contents
     }
+    
+    func shouldSqueezeOrRevert() -> Bool {
+        if self.squeeze == false {
+            self.squeeze = true
+        }else{
+            self.squeeze = false
+        }
+        return self.squeeze
+    }
+    
+    func copy() -> SectionedContentCategoryViewModel {
+            // Create a deep copy of the contents array
+            let copiedContents = self.contents.map { $0.copy() }
+            
+            // Create a new instance of SectionedContentCategoryViewModel with copied contents
+            let copiedModel = SectionedContentCategoryViewModel(uuid: self.uuid, name: self.name, contents: copiedContents)
+            
+            // Copy the squeeze state
+            copiedModel.squeeze = self.squeeze
+            
+            return copiedModel
+        }
 }
 
 class ContentViewModel {
@@ -67,6 +90,10 @@ class ContentViewModel {
         self.uuid = uuid
         self.name = name
     }
+    
+    func copy() -> ContentViewModel {
+            return ContentViewModel(uuid: self.uuid, name: self.name)
+        }
     
 }
 
@@ -80,6 +107,7 @@ class SectionedContentCollectionView: UICollectionView {
             self.reloadData()
         }
     }
+    var originalCellViewModels: [SectionedContentCategoryViewModel] = []
     override func awakeFromNib() {
         super.awakeFromNib()
         setupCV()
@@ -93,10 +121,14 @@ class SectionedContentCollectionView: UICollectionView {
         
         let headerNib = UINib(nibName: headerCellID, bundle: nil)
         self.register(headerNib, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader , withReuseIdentifier: headerCellID)
-        self.contentInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 0)
+        self.contentInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
     }
     public func updateWith(viewModels: [SectionedContentCategoryViewModel]){
-        self.cellViewModels = viewModels
+        self.originalCellViewModels = viewModels
+        self.cellViewModels = []
+        for viewModel in viewModels {
+            self.cellViewModels.append(viewModel.copy())
+        }
     }
     
 }
@@ -117,7 +149,40 @@ extension SectionedContentCollectionView: UICollectionViewDataSource, UICollecti
     }
     
     func selectedHeader(uuid: String) {
+        for (sectionNo,cellViewModel) in self.cellViewModels.enumerated() {
+            if cellViewModel.uuid == uuid {
+                performAnimation(shouldSqueeze: cellViewModel.shouldSqueezeOrRevert(), for: sectionNo)
+                break
+            }
+        }
         print("Event: SectionedContentVC: HeaderView selected... uuid: \(uuid)")
+    }
+    
+    func performAnimation(shouldSqueeze: Bool, for sectionIndx: Int){
+     
+        self.performBatchUpdates {
+            if shouldSqueeze {
+                var indexPaths: [IndexPath] = []
+                let totalItems = cellViewModels[sectionIndx].contents.count
+                for row in 0..<totalItems {
+                    indexPaths.append(IndexPath(row: row, section: sectionIndx))
+                }
+                //update current view models
+                cellViewModels[sectionIndx].contents = []
+                self.deleteItems(at: indexPaths)
+            } else {
+                var indexPaths: [IndexPath] = []
+                let totalItems = originalCellViewModels[sectionIndx].contents.count
+                for row in 0..<totalItems {
+                    indexPaths.append(IndexPath(row: row, section: sectionIndx))
+                }
+                
+                self.insertItems(at: indexPaths)
+                cellViewModels[sectionIndx].contents = self.originalCellViewModels[sectionIndx].contents
+            }
+        } completion: { _ in
+            // Optional completion handler if you need further action after animation
+        }
     }
     
     
@@ -143,6 +208,9 @@ extension SectionedContentCollectionView: UICollectionViewDataSource, UICollecti
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         self.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        if let cell = collectionView.cellForItem(at: indexPath) as? SectionedContentCVCell {
+            cell.showSelectionAnimation()
+        }
     }
     
     
@@ -160,7 +228,11 @@ extension SectionedContentCollectionView: UICollectionViewDataSource, UICollecti
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 20)
+        if section == (self.cellViewModels.count - 1){
+            return UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 0) //no right inset for last
+        }else{
+            return UIEdgeInsets(top: 0, left: 2, bottom: 0, right: 0)
+        }
     }
     
     
@@ -183,6 +255,16 @@ class SectionedContentCVCell: UICollectionViewCell {
         self.backgroundColor = UIColor.red.withAlphaComponent(randomValue)
         self.label.text = viewModel.name
     
+    }
+    
+    func showSelectionAnimation(){
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [.curveEaseIn]) {
+            self.transform = CGAffineTransform(scaleX: 0.9, y: 0.9)
+        } completion: { _ in
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: [.curveEaseOut]) {
+                self.transform = CGAffineTransform(scaleX: 1.0, y: 1.0)
+            }
+        }
     }
 }
 
