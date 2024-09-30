@@ -20,11 +20,11 @@ class SectionedContentVC: UIViewController {
         let contents1: [ContentViewModel] = [
             ContentViewModel(uuid: "1", name: "Content 1"),
             ContentViewModel(uuid: "2", name: "Content 2"),
-            ContentViewModel(uuid: "3", name: "Content 3"),
-            ContentViewModel(uuid: "4", name: "Content 4"),
+            ContentViewModel(uuid: "3", name: "Content 3")
         ]
         
         let contents2: [ContentViewModel] = [
+            ContentViewModel(uuid: "4", name: "Content 4"),
             ContentViewModel(uuid: "5", name: "Content 5"),
             ContentViewModel(uuid: "6", name: "Content 6")
             
